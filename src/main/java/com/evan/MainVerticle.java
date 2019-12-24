@@ -34,7 +34,7 @@ public class MainVerticle extends AbstractVerticle {
                             case 200:
                                 JsonObject headers = new JsonObject();
                                 for(Entry<String, String> header : ar.result().headers().entries()) {
-                                    headers.put(header.getKey(), header.getValue());
+                                    headers.put(header.getKey().toLowerCase(), header.getValue().toLowerCase());
                                 }
                                 JsonObject event = new JsonObject()
                                     .put("body", ar.result().bodyAsString())
@@ -55,7 +55,8 @@ public class MainVerticle extends AbstractVerticle {
         
         MessageConsumer<JsonObject> validUrl = eb.consumer("url.valid");
         validUrl.handler(message -> {
-            String contentType = message.body().getJsonObject("headers").getString("Content-Type").split(";")[0];
+            String contentType = message.body().getJsonObject("headers", new JsonObject()).getString("content-type", "").split(";")[0];
+
             switch(contentType) {
                 case "text/html":
                     Elements links = Jsoup.parse(message.body().getString("body")).select("a");
